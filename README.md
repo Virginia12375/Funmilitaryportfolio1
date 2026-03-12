@@ -1,4 +1,4 @@
-![Opening page](https://github.com/user-attachments/assets/6701ff5e-7449-47db-bb9b-28edfa24e6c7)### MILITARY-GRADE PORTFOLIO
+### MILITARY-GRADE PORTFOLIO
 A cybersecurity-themed interactive portfolio with terminal interface and biometric scanner animation.
 
 ## Tech Stack
