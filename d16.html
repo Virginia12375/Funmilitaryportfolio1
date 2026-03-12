@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Military Security Portfolio | Tactical Terminal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        :root {
+            --military-dark: #0a0f0a;
+            --military-green: #2a4d2a;
+            --military-light: #8fa08f;
+            --terminal-green: #00ff41;
+            --warning-red: #ff3e3e;
+            --text: #e0e0e0;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Courier New', monospace;
+        }
+        
+        body {
+            background-color: var(--military-dark);
+            color: var(--text);
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(42, 77, 42, 0.2) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(42, 77, 42, 0.2) 0%, transparent 20%);
+        }
+        
+        /* ===== SCANNER OVERLAY ===== */
+        #scanner-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(10, 15, 10, 0.98);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .scanner-container {
+            position: relative;
+            width: 80%;
+            max-width: 600px;
+            height: 50vh;
+            border: 3px solid var(--military-green);
+            box-shadow: 0 0 15px var(--military-green), 
+                        inset 0 0 15px var(--military-green);
+            overflow: hidden;
+            background: rgba(0, 0, 0, 0.7);
+        }
+        
+        .scanner-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                linear-gradient(rgba(42, 77, 42, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(42, 77, 42, 0.1) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+        
+        .scan-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, rgba(42, 77, 42, 0) 0%, var(--terminal-green) 50%, rgba(42, 77, 42, 0) 100%);
+            box-shadow: 0 0 10px var(--terminal-green);
+            animation: scan 2.5s linear infinite;
+            opacity: 0.8;
+        }
+        
+        @keyframes scan {
+            0% { top: 0%; }
+            100% { top: 100%; }
+        }
+        
+        .scanner-corners {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        
+        .corner {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border: 2px solid var(--terminal-green);
+            box-shadow: 0 0 8px var(--terminal-green);
+        }
+        
+        .corner-tl {
+            top: 5px;
+            left: 5px;
+            border-right: none;
+            border-bottom: none;
+        }
+        
+        .corner-tr {
+            top: 5px;
+            right: 5px;
+            border-left: none;
+            border-bottom: none;
+        }
+        
+        .corner-bl {
+            bottom: 5px;
+            left: 5px;
+            border-right: none;
+            border-top: none;
+        }
+        
+        .corner-br {
+            bottom: 5px;
+            right: 5px;
+            border-left: none;
+            border-top: none;
+        }
+        
+        #scan-image {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 200px;
+            height: 200px;
+            border-radius: 5px;
+            border: 2px solid var(--military-green);
+            box-shadow: 0 0 15px var(--military-green);
+            opacity: 0;
+            object-fit: cover;
+            transition: all 0.5s;
+        }
+        
+        .scan-status {
+            margin-top: 2rem;
+            font-size: 1.2rem;
+            color: var(--terminal-green);
+            text-align: center;
+            text-shadow: 0 0 5px var(--terminal-green);
+            font-family: 'Courier New', monospace;
+            letter-spacing: 1px;
+        }
+        
+        .scanner-radar {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 2px solid var(--terminal-green);
+            box-shadow: 0 0 10px var(--terminal-green);
+        }
+        
+        .scanner-radar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg, rgba(0, 255, 65, 0) 0%, rgba(0, 255, 65, 0.3) 50%, rgba(0, 255, 65, 0) 100%);
+            animation: radar-sweep 1.5s linear infinite;
+        }
+        
+        @keyframes radar-sweep {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* ===== MAIN CONTENT LAYOUT ===== */
+        #portfolio-content {
+            display: none;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .military-header {
+            text-align: center;
+            padding: 20px;
+            border-bottom: 1px solid var(--military-green);
+            margin-bottom: 30px;
+            position: relative;
+        }
+        
+        .military-header::before, .military-header::after {
+            content: "✪";
+            color: var(--terminal-green);
+            position: absolute;
+            bottom: -10px;
+            font-size: 20px;
+        }
+        
+        .military-header::before {
+            left: 20%;
+        }
+        
+        .military-header::after {
+            right: 20%;
+        }
+        
+        .military-header h1 {
+            font-size: 2.5rem;
+            color: var(--terminal-green);
+            text-shadow: 0 0 5px var(--terminal-green);
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+        
+        .military-header p {
+            color: var(--military-light);
+            font-size: 1.1rem;
+        }
+        
+        .content-container {
+            display: flex;
+            flex-wrap: wrap;
+            max-width: 1200px;
+            margin: 0 auto;
+            gap: 30px;
+        }
+        
+        .profile-section {
+            flex: 1;
+            min-width: 300px;
+            background: rgba(20, 30, 20, 0.7);
+            border: 1px solid var(--military-green);
+            border-radius: 5px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(42, 77, 42, 0.5);
+        }
+        
+        .profile-image {
+            width: 200px;
+            height: 200px;
+            border-radius: 5px;
+            border: 2px solid var(--military-green);
+            margin: 0 auto 20px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .profile-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .profile-image::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.7);
+        }
+        
+        .profile-info h2 {
+            color: var(--terminal-green);
+            margin-bottom: 15px;
+            text-align: center;
+            border-bottom: 1px solid var(--military-green);
+            padding-bottom: 10px;
+        }
+        
+        .profile-info p {
+            margin-bottom: 15px;
+            line-height: 1.6;
+            color: var(--military-light);
+        }
+        
+        .terminal-section {
+            flex: 1;
+            min-width: 300px;
+            background: rgba(10, 15, 10, 0.9);
+            border: 1px solid var(--military-green);
+            border-radius: 5px;
+            padding: 20px;
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.2);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .terminal-header {
+            background: var(--military-green);
+            padding: 8px 15px;
+            border-top-left-radius: 5px;
+            border-top-right-radius: 5px;
+            margin: -20px -20px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+        }
+        
+        .terminal-controls {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .terminal-control {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .terminal-control.close { background-color: var(--warning-red); }
+        .terminal-control.minimize { background-color: #ffbf00; }
+        .terminal-control.maximize { background-color: var(--terminal-green); }
+        
+        #terminal-output {
+            flex-grow: 1;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+            color: var(--terminal-green);
+            white-space: pre-wrap;
+            line-height: 1.5;
+            font-size: 0.9rem;
+            height: 300px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 3px;
+        }
+        
+        #terminal-input {
+            display: flex;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 8px;
+            border-radius: 3px;
+            border: 1px solid var(--military-green);
+        }
+        
+        #terminal-prompt {
+            color: var(--terminal-green);
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        
+        #terminal-command {
+            flex-grow: 1;
+            background: transparent;
+            border: none;
+            color: var(--terminal-green);
+            font-family: 'Courier New', monospace;
+            outline: none;
+            padding: 5px;
+            font-size: 0.9rem;
+        }
+        
+        .blink {
+            animation: blink 1s step-end infinite;
+        }
+        
+        @keyframes blink {
+            from, to { opacity: 1; }
+            50% { opacity: 0; }
+        }
+        
+        /* ===== MATRIX EFFECT (Easter Egg) ===== */
+        #matrix-effect {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: black;
+            z-index: 2000;
+            display: none;
+        }
+        
+        /* ===== RESPONSIVE DESIGN ===== */
+        @media (max-width: 768px) {
+            .content-container {
+                flex-direction: column;
+            }
+            
+            .military-header h1 {
+                font-size: 2rem;
+            }
+            
+            .scanner-container {
+                height: 40vh;
+            }
+        }
+        
+        /* ===== SECURITY CLEARANCE BADGE ===== */
+        .clearance-badge {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: var(--military-dark);
+            border: 2px solid var(--terminal-green);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--terminal-green);
+            font-size: 0.8rem;
+            text-align: center;
+            box-shadow: 0 0 10px var(--terminal-green);
+            z-index: 100;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 5px var(--terminal-green); }
+            50% { box-shadow: 0 0 15px var(--terminal-green); }
+            100% { box-shadow: 0 0 5px var(--terminal-green); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Scanner Overlay -->
+    <div id="scanner-overlay">
+        <div class="scanner-container">
+            <div class="scanner-grid"></div>
+            <div class="scan-line"></div>
+            <div class="scanner-corners">
+                <div class="corner corner-tl"></div>
+                <div class="corner corner-tr"></div>
+                <div class="corner corner-bl"></div>
+                <div class="corner corner-br"></div>
+            </div>
+            <img id="scan-image" src="https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&q=80" alt="Security Scan">
+            <div class="scanner-radar"></div>
+        </div>
+        <div class="scan-status" id="scan-status">INITIALIZING SECURITY SCAN...</div>
+    </div>
+    
+    <!-- Main Portfolio Content -->
+    <div id="portfolio-content">
+        <header class="military-header">
+            <h1>MILITARY-GRADE PORTFOLIO</h1>
+            <p>SECURITY CLEARANCE LEVEL: ALPHA</p>
+        </header>
+        
+        <div class="content-container">
+            <section class="profile-section">
+                <div class="profile-image">
+                    <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&q=80" alt="Developer Profile">
+                </div>
+                
+                <div class="profile-info">
+                    <h2>OPERATIVE DOSSIER</h2>
+                    <p><strong>IDENTIFICATION:</strong> Agent [REDACTED]</p>
+                    <p><strong>SPECIALIZATION:</strong> Cyber Operations & Frontline Development</p>
+                    <p><strong>CLEARANCE LEVEL:</strong> Alpha</p>
+                    <p><strong>STATUS:</strong> Active Duty</p>
+                    <p><strong>BACKGROUND:</strong> Highly trained in advanced web technologies and cybersecurity protocols. Specializes in creating secure, mission-critical applications for defense systems.</p>
+                </div>
+            </section>
+            
+            <section class="terminal-section">
+                <div class="terminal-header">
+                    <span>TERMINAL - SECURE CONNECTION</span>
+                    <div class="terminal-controls">
+                        <div class="terminal-control close"></div>
+                        <div class="terminal-control minimize"></div>
+                        <div class="terminal-control maximize"></div>
+                    </div>
+                </div>
+                
+                <div id="terminal-output"></div>
+                
+                <div id="terminal-input">
+                    <span id="terminal-prompt">user@mil-net:~$</span>
+                    <input type="text" id="terminal-command" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+                </div>
+            </section>
+        </div>
+        
+        <div class="clearance-badge">ALPHA<br>CLEARANCE</div>
+    </div>
+    
+    <!-- Matrix Effect (Easter Egg) -->
+    <canvas id="matrix-effect"></canvas>
+    
+    <!-- JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // ===== SCANNER SEQUENCE =====
+            const scannerOverlay = document.getElementById('scanner-overlay');
+            const portfolioContent = document.getElementById('portfolio-content');
+            const scanImage = document.getElementById('scan-image');
+            const scanStatus = document.getElementById('scan-status');
+            
+            // ===== TERMINAL SETUP =====
+            const terminalOutput = document.getElementById('terminal-output');
+            const terminalCommand = document.getElementById('terminal-command');
+            
+            // Command history for up/down arrow navigation
+            const commandHistory = [];
+            let historyIndex = -1;
+            
+            // ===== MATRIX EFFECT SETUP =====
+            const matrixCanvas = document.getElementById('matrix-effect');
+            const matrixCtx = matrixCanvas.getContext('2d');
+            matrixCanvas.width = window.innerWidth;
+            matrixCanvas.height = window.innerHeight;
+            
+            // Matrix characters
+            const matrixChars = "01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン";
+            const fontSize = 14;
+            const columns = matrixCanvas.width / fontSize;
+            const drops = [];
+            
+            for (let i = 0; i < columns; i++) {
+                drops[i] = 1;
+            }
+            
+            function drawMatrix() {
+                matrixCtx.fillStyle = "rgba(0, 0, 0, 0.05)";
+                matrixCtx.fillRect(0, 0, matrixCanvas.width, matrixCanvas.height);
+                matrixCtx.fillStyle = "var(--terminal-green)";
+                matrixCtx.font = fontSize + "px monospace";
+                
+                for (let i = 0; i < drops.length; i++) {
+                    const text = matrixChars.charAt(Math.floor(Math.random() * matrixChars.length));
+                    matrixCtx.fillText(text, i * fontSize, drops[i] * fontSize);
+                    
+                    if (drops[i] * fontSize > matrixCanvas.height && Math.random() > 0.975) {
+                        drops[i] = 0;
+                    }
+                    
+                    drops[i]++;
+                }
+            }
+            
+            // ===== COMMANDS =====
+            const commands = {
+                help: {
+                    description: "Display this help message",
+                    execute: () => {
+                        addTerminalOutput("Available commands:\n");
+                        for (const [cmd, data] of Object.entries(commands)) {
+                            if (!data.hidden) {
+                                addTerminalOutput(`${cmd.padEnd(15)}${data.description}`);
+                            }
+                        }
+                        addTerminalOutput("\nType 'about' to access operative dossier.");
+                    }
+                },
+                about: {
+                    description: "Access operative dossier",
+                    execute: () => {
+                        addTerminalOutput("\nOPERATIVE DOSSIER - CLEARANCE LEVEL: ALPHA\n");
+                        addTerminalOutput("IDENTIFICATION: Agent [REDACTED]");
+                        addTerminalOutput("SPECIALIZATION: Cyber Operations & Frontline Development");
+                        addTerminalOutput("CLEARANCE LEVEL: Alpha");
+                        addTerminalOutput("STATUS: Active Duty");
+                        addTerminalOutput("\nBACKGROUND:");
+                        addTerminalOutput("Highly trained in advanced web technologies and cybersecurity protocols.");
+                        addTerminalOutput("Specializes in creating secure, mission-critical applications for defense systems.");
+                        addTerminalOutput("\nSKILLS:");
+                        addTerminalOutput("- Advanced JavaScript & TypeScript Operations");
+                        addTerminalOutput("- React & Vue Framework Deployment");
+                        addTerminalOutput("- Node.js Backend Tactics");
+                        addTerminalOutput("- Cybersecurity Countermeasures");
+                        addTerminalOutput("- Encryption Protocol Implementation");
+                    }
+                },
+                mission: {
+                    description: "View active mission parameters",
+                    execute: () => {
+                        addTerminalOutput("\nACTIVE MISSION PARAMETERS\n");
+                        addTerminalOutput("OBJECTIVE: Develop secure, responsive web applications");
+                        addTerminalOutput("TARGET: Frontend and backend systems");
+                        addTerminalOutput("STATUS: In progress");
+                        addTerminalOutput("NEXT PHASE: User authentication protocol enhancement");
+                    }
+                },
+                skills: {
+                    description: "Display technical capabilities",
+                    execute: () => {
+                        addTerminalOutput("\nTECHNICAL CAPABILITIES\n");
+                        addTerminalOutput("Frontend: React, Vue, HTML5, CSS3, JavaScript/TypeScript");
+                        addTerminalOutput("Backend: Node.js, Python, Django, Express");
+                        addTerminalOutput("Database: MongoDB, PostgreSQL, Firebase");
+                        addTerminalOutput("Tools: Git, Docker, Webpack, AWS");
+                        addTerminalOutput("Security: OWASP practices, Encryption, JWT");
+                    }
+                },
+                contact: {
+                    description: "Request contact protocols",
+                    execute: () => {
+                        addTerminalOutput("\nCONTACT PROTOCOLS\n");
+                        addTerminalOutput("Email: encrypted.communication@mil-net.gov");
+                        addTerminalOutput("GitHub: github.com/operative-[REDACTED]");
+                        addTerminalOutput("LinkedIn: linkedin.com/in/secure-connection");
+                        addTerminalOutput("\nNote: All communications are encrypted and monitored for security.");
+                    }
+                },
+                clear: {
+                    description: "Clear the terminal screen",
+                    execute: () => {
+                        terminalOutput.innerHTML = '';
+                    }
+                },
+                // ===== EASTER EGGS =====
+                matrix: {
+                    description: "Initiate matrix protocol",
+                    hidden: true,
+                    execute: () => {
+                        addTerminalOutput("Initiating matrix protocol...");
+                        matrixCanvas.style.display = 'block';
+                        const matrixInterval = setInterval(drawMatrix, 50);
+                        
+                        setTimeout(() => {
+                            clearInterval(matrixInterval);
+                            matrixCanvas.style.display = 'none';
+                            addTerminalOutput("Matrix protocol terminated.");
+                        }, 5000);
+                    }
+                },
+                sudo: {
+                    description: "Elevate privileges",
+                    hidden: true,
+                    execute: () => {
+                        addTerminalOutput("Access denied. Insufficient clearance level.");
+                    }
+                },
+                launch: {
+                    description: "Initiate launch sequence",
+                    hidden: true,
+                    execute: () => {
+                        addTerminalOutput("Initiating launch sequence...");
+                        addTerminalOutput("3...");
+                        setTimeout(() => {
+                            addTerminalOutput("2...");
+                            setTimeout(() => {
+                                addTerminalOutput("1...");
+                                setTimeout(() => {
+                                    addTerminalOutput("Launch aborted. Command required authorization level Delta.");
+                                }, 1000);
+                            }, 1000);
+                        }, 1000);
+                    }
+                }
+            };
+            
+            // ===== TERMINAL FUNCTIONS =====
+            function addTerminalOutput(text) {
+                terminalOutput.innerHTML += text + '\n';
+                terminalOutput.scrollTop = terminalOutput.scrollHeight;
+            }
+            
+            function processCommand(command) {
+                if (command.trim() === '') return;
+                
+                // Add to history
+                commandHistory.push(command);
+                historyIndex = -1;
+                
+                addTerminalOutput(`user@mil-net:~$ ${command}`);
+                
+                if (commands[command]) {
+                    commands[command].execute();
+                } else {
+                    addTerminalOutput(`Command not recognized: ${command}. Type 'help' for available commands.`);
+                }
+                
+                terminalCommand.value = '';
+            }
+            
+            // ===== SCANNER ANIMATION SEQUENCE =====
+            setTimeout(() => {
+                scanStatus.textContent = "SCANNING RETINA PATTERN...";
+                scanImage.style.opacity = "0.2";
+                
+                // Add glitch effect
+                setTimeout(() => {
+                    scanImage.style.filter = "contrast(1.5) brightness(1.2)";
+                    setTimeout(() => {
+                        scanImage.style.filter = "none";
+                    }, 300);
+                }, 1000);
+            }, 2000);
+            
+            setTimeout(() => scanImage.style.opacity = "0.5", 3500);
+            setTimeout(() => scanImage.style.opacity = "0.8", 5000);
+            
+            setTimeout(() => {
+                scanImage.style.opacity = "1";
+                scanStatus.textContent = "BIOMETRIC SCAN COMPLETE";
+                
+                // Final glitch effect
+                scanImage.style.filter = "hue-rotate(90deg)";
+                setTimeout(() => {
+                    scanImage.style.filter = "none";
+                }, 500);
+            }, 6500);
+            
+            setTimeout(() => scanStatus.textContent = "ACCESS LEVEL: ALPHA CONFIRMED", 8000);
+            setTimeout(() => scanStatus.textContent = "TERMINAL READY FOR COMMANDS", 9500);
+            
+            setTimeout(() => {
+                scannerOverlay.style.display = 'none';
+                portfolioContent.style.display = 'block';
+                setTimeout(() => {
+                    terminalCommand.focus();
+                    
+                    // Initialize terminal with instructions
+                    setTimeout(() => {
+                        addTerminalOutput("Secure connection established.");
+                        addTerminalOutput("Military Network Terminal v2.7.4");
+                        addTerminalOutput("Type 'help' for available commands.");
+                        addTerminalOutput("Type 'about' to access operative dossier.\n");
+                    }, 100);
+                }, 500);
+            }, 11000);
+            
+            // ===== EVENT LISTENERS =====
+            terminalCommand.addEventListener('keydown', (e) => {
+                // Enter key
+                if (e.key === 'Enter') {
+                    processCommand(terminalCommand.value);
+                }
+                // Up arrow (command history)
+                if (e.key === 'ArrowUp') {
+                    if (historyIndex < commandHistory.length - 1) {
+                        historyIndex++;
+                        terminalCommand.value = commandHistory[commandHistory.length - 1 - historyIndex];
+                    }
+                }
+                // Down arrow (command history)
+                if (e.key === 'ArrowDown') {
+                    if (historyIndex > 0) {
+                        historyIndex--;
+                        terminalCommand.value = commandHistory[commandHistory.length - 1 - historyIndex];
+                    } else {
+                        historyIndex = -1;
+                        terminalCommand.value = '';
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
