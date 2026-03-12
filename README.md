@@ -40,4 +40,5 @@ cd military-portfolio
 ## Screenshot
 ![Opening page](https://github.com/user-attachments/assets/3c563de0-d40a-4fb8-9d3d-a2aa29d63918)
 ![Portfolio page](https://github.com/user-attachments/assets/9df13932-2b4c-4350-b2f5-1a7b16fd12ab)
+![about page](https://github.com/user-attachments/assets/011c3ad1-1bea-4f71-8211-aa6b5f660659)
 
